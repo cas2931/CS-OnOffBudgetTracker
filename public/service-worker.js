@@ -1,11 +1,12 @@
-const FILES_TO_CACHE = ["/", "/index.html", "/index.js", "/style.css", "/db.js"];
+const FILES_TO_CACHE = [
+  "/", "./index.html","index.js", "./db.js", "./styles.css"];
+
 
 const CACHE_NAME = "static-cache-v2";
 const DATA_CACHE_NAME = "data-cache-v1"; 
 
-
-self.addEventListener("install", event => {
-  event.waitUntil(
+self.addEventListener("install", function(evt) {
+  evt.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       console.log("Your files were pre-cached successfully!");
       return cache.addAll(FILES_TO_CACHE);
@@ -16,8 +17,8 @@ self.addEventListener("install", event => {
 });
 
 
-self.addEventListener("activate", event => {
-  event.waitUntil(
+self.addEventListener("activate", function(evt) {
+  evt.waitUntil(
     caches.keys().then(keyList => {
       return Promise.all(
         keyList.map(key => {
@@ -34,31 +35,31 @@ self.addEventListener("activate", event => {
 });
 
 
-self.addEventListener("fetch", event => {
-    if(event.request.url.includes('/api/')) {
-        console.log('[Service Worker] Fetch(data)', event.request.url);
+self.addEventListener("fetch", evt => {
+    if(evt.request.url.includes('/api/')) {
+        console.log('[Service Worker] Fetch(data)', evt.request.url);
     
-event.respondWith(
+evt.respondWith(
                 caches.open(DATA_CACHE_NAME).then(cache => {
-                return fetch(event.request)
+                return fetch(evt.request)
                 .then(response => {
                     if (response.status === 200){
-                        cache.put(event.request.url, response.clone());
+                        cache.put(evt.request.url, response.clone());
                     }
                     return response;
                 })
                 .catch(err => {
-                    return cache.match(event.request);
+                    return cache.match(evt.request);
                 });
             })
             );
             return;
         }
 
-event.respondWith(
+evt.respondWith(
     caches.open(CACHE_NAME).then( cache => {
-      return cache.match(event.request).then(response => {
-        return response || fetch(event.request);
+      return cache.match(evt.request).then(response => {
+        return response || fetch(evt.request);
       });
     })
   );
